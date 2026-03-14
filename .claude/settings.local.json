@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -E \"\\\\.\\(json|tsx|ts|jsx|js|html|css\\)$\")"
+      "Bash(grep -E \"\\\\.\\(json|tsx|ts|jsx|js|html|css\\)$\")",
+      "Bash(npm install:*)"
     ]
   }
 }
