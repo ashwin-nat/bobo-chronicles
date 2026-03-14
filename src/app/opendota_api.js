@@ -27,3 +27,10 @@ export async function getHeroes() {
   const heroes = await res.json();
   return Object.fromEntries(heroes.map((h) => [h.id, h.localized_name]));
 }
+
+export async function getPlayerProfile(steamId32) {
+  const res = await fetch(`${BASE_URL}/players/${steamId32}`);
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data?.profile?.personaname || null;
+}

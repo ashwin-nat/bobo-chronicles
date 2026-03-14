@@ -5,7 +5,7 @@ function isWin(match) {
 
 const MAX_SELECTIONS = 5;
 
-export function renderMatches(matches, heroMap, container, onGenerateComic) {
+export function renderMatches(matches, heroMap, container, onGenerateStory) {
   if (!matches.length) {
     container.innerHTML = '<p class="empty">No matches found.</p>';
     return;
@@ -49,12 +49,12 @@ export function renderMatches(matches, heroMap, container, onGenerateComic) {
       </thead>
       <tbody>${rows}</tbody>
     </table>
-    <div class="comic-actions">
-      <span class="selection-hint">Select up to ${MAX_SELECTIONS} parsed matches to generate a comic</span>
-      <button id="generate-comic-btn" disabled>Generate Comic</button>
+    <div class="story-actions">
+      <span class="selection-hint">Select up to ${MAX_SELECTIONS} parsed matches to generate a story</span>
+      <button id="generate-story-btn" disabled>Generate Story</button>
     </div>`;
 
-  const generateBtn = container.querySelector("#generate-comic-btn");
+  const generateBtn = container.querySelector("#generate-story-btn");
   const selectionHint = container.querySelector(".selection-hint");
   const checkboxes = [...container.querySelectorAll(".match-select")];
 
@@ -64,7 +64,7 @@ export function renderMatches(matches, heroMap, container, onGenerateComic) {
     generateBtn.disabled = count === 0;
     selectionHint.textContent =
       count === 0
-        ? `Select up to ${MAX_SELECTIONS} parsed matches to generate a comic`
+        ? `Select up to ${MAX_SELECTIONS} parsed matches to generate a story`
         : `${count} of ${MAX_SELECTIONS} matches selected`;
     checkboxes.forEach((cb) => {
       if (!cb.checked) cb.disabled = count >= MAX_SELECTIONS;
@@ -75,7 +75,7 @@ export function renderMatches(matches, heroMap, container, onGenerateComic) {
 
   generateBtn.addEventListener("click", () => {
     const selected = checkboxes.filter((cb) => cb.checked).map((cb) => cb.dataset.matchId);
-    if (selected.length && onGenerateComic) onGenerateComic(selected);
+    if (selected.length && onGenerateStory) onGenerateStory(selected);
   });
 }
 

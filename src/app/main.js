@@ -1,15 +1,15 @@
 import { resolvePlayer } from "./steam_resolver.js";
-import { getRecentMatches, getHeroes, getMatchParsed } from "./opendota_api.js";
+import { getRecentMatches, getHeroes, getMatchParsed, getPlayerProfile } from "./opendota_api.js";
 import { renderMatches, renderError, renderLoading } from "./match_view.js";
-import { generateComicScript } from "./comic_generator.js";
-import { renderComic } from "./comic_view.js";
+import { generateStoryScript } from "./comic_generator.js";
+import { renderStory } from "./comic_view.js";
 
 const playerInput = document.getElementById("player-input");
 const apiKeyInput = document.getElementById("api-key-input");
 const fetchBtn = document.getElementById("fetch-btn");
 const resultsEl = document.getElementById("results");
 const playerInfoEl = document.getElementById("player-info");
-const comicEl = document.getElementById("comic-output");
+const storyEl = document.getElementById("story-output");
 
 apiKeyInput.value = localStorage.getItem("steam_api_key") || "";
 apiKeyInput.addEventListener("input", () => {
@@ -17,15 +17,16 @@ apiKeyInput.addEventListener("input", () => {
 });
 
 let currentHeroMap = {};
+let currentPlayerId = null;
 
-async function handleGenerateComic(matchIds) {
-  comicEl.innerHTML = '<p class="loading">Fetching match data and generating comic...</p>';
-  comicEl.scrollIntoView({ behavior: "smooth" });
+async function handleGenerateStory(matchIds) {
+  storyEl.innerHTML = '<p class="loading">Fetching match data and generating story...</p>';
+  storyEl.scrollIntoView({ behavior: "smooth" });
   try {
-    const acts = await generateComicScript(matchIds, currentHeroMap);
-    renderComic(acts, comicEl);
+    const chapters = await generateStoryScript(matchIds, currentHeroMap, currentPlayerId);
+    renderStory(chapters, storyEl);
   } catch (err) {
-    comicEl.innerHTML = `<p class="error">Failed to generate comic: ${err.message}</p>`;
+    storyEl.innerHTML = `<p class="error">Failed to generate story: ${err.message}</p>`;
   }
 }
 
@@ -35,7 +36,7 @@ fetchBtn.addEventListener("click", async () => {
 
   fetchBtn.disabled = true;
   playerInfoEl.textContent = "";
-  comicEl.innerHTML = "";
+  storyEl.innerHTML = "";
   renderLoading(resultsEl);
 
   try {
@@ -45,12 +46,17 @@ fetchBtn.addEventListener("click", async () => {
     ]);
 
     currentHeroMap = heroMap;
-    playerInfoEl.textContent = `Player: ${player.name} — SteamID32: ${player.steam_id32}`;
+    currentPlayerId = player.steam_id32;
+
+    // Fetch display name from OpenDota profile (may be null for private profiles)
+    const profileName = await getPlayerProfile(player.steam_id32);
+    const displayName = profileName || player.name;
+    playerInfoEl.textContent = `Player: ${displayName} — SteamID32: ${player.steam_id32}`;
 
     const matches = await getRecentMatches(player.steam_id32);
     const parsedFlags = await Promise.all(matches.map((m) => getMatchParsed(m.match_id)));
     matches.forEach((m, i) => { m.has_parsed = parsedFlags[i]; });
-    renderMatches(matches, heroMap, resultsEl, handleGenerateComic);
+    renderMatches(matches, heroMap, resultsEl, handleGenerateStory);
   } catch (err) {
     renderError(err.message || "An unexpected error occurred.", resultsEl);
   } finally {
