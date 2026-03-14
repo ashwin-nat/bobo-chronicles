@@ -1,0 +1,181 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: #0e0e14;
+  color: #d4d4d8;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+header h1 {
+  font-size: 2rem;
+  color: #a78bfa;
+  letter-spacing: 0.02em;
+}
+
+header p {
+  margin-top: 0.4rem;
+  color: #71717a;
+  font-size: 0.9rem;
+}
+
+.form-section {
+  background: #18181f;
+  border: 1px solid #27272a;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+label {
+  display: block;
+  font-size: 0.8rem;
+  color: #a1a1aa;
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  background: #0e0e14;
+  border: 1px solid #3f3f46;
+  border-radius: 6px;
+  color: #e4e4e7;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+  border-color: #7c3aed;
+}
+
+.input-row {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.input-row input {
+  flex: 1;
+}
+
+button {
+  padding: 0.6rem 1.4rem;
+  background: #7c3aed;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+button:hover:not(:disabled) {
+  background: #6d28d9;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hint {
+  font-size: 0.78rem;
+  color: #52525b;
+  margin-top: 0.4rem;
+}
+
+#player-info {
+  font-size: 0.85rem;
+  color: #a1a1aa;
+  margin-bottom: 1rem;
+  min-height: 1.2em;
+}
+
+#results table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+#results thead th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #27272a;
+  color: #71717a;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+#results tbody tr {
+  border-bottom: 1px solid #1c1c23;
+  transition: background 0.1s;
+}
+
+#results tbody tr:hover {
+  background: #1e1e28;
+}
+
+#results tbody td {
+  padding: 0.55rem 0.75rem;
+}
+
+#results tbody td a {
+  color: #818cf8;
+  text-decoration: none;
+}
+
+#results tbody td a:hover {
+  text-decoration: underline;
+}
+
+#results .win .result {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+#results .loss .result {
+  color: #f87171;
+  font-weight: 600;
+}
+
+.loading,
+.empty {
+  color: #52525b;
+  font-style: italic;
+  padding: 1rem 0;
+}
+
+.error {
+  color: #f87171;
+  padding: 1rem 0;
+}

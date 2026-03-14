@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bobo Chronicles</title>
+    <link rel="stylesheet" href="src/styles/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Bobo Chronicles</h1>
+        <p>Enter a Steam profile to view recent Dota 2 matches.</p>
+      </header>
+
+      <div class="form-section">
+        <div class="form-group">
+          <label for="player-input">Player</label>
+          <div class="input-row">
+            <input
+              id="player-input"
+              type="text"
+              placeholder="Steam name, profile URL, or SteamID64"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button id="fetch-btn">Fetch Matches</button>
+          </div>
+          <p class="hint">
+            Accepts: vanity name · steamcommunity.com/id/... ·
+            steamcommunity.com/profiles/... · SteamID64 · SteamID32
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label for="api-key-input">Steam API Key <span style="font-weight:400;text-transform:none">(required for vanity name resolution)</span></label>
+          <input
+            id="api-key-input"
+            type="password"
+            placeholder="Get yours at steamcommunity.com/dev/apikey"
+            autocomplete="off"
+          />
+          <p class="hint">Stored locally in your browser only. Not sent anywhere except Steam's API.</p>
+        </div>
+      </div>
+
+      <div id="player-info"></div>
+      <div id="results"></div>
+    </div>
+
+    <script type="module" src="src/app/main.js"></script>
+  </body>
+</html>
