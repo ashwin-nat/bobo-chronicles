@@ -8,6 +8,13 @@ export async function getRecentMatches(steamID32, limit = RECENT_MATCH_LIMIT) {
   return matches.slice(0, limit);
 }
 
+export async function getMatchParsed(matchId) {
+  const res = await fetch(`${BASE_URL}/matches/${matchId}`);
+  if (!res.ok) return false;
+  const data = await res.json();
+  return data?.od_data?.has_parsed ?? false;
+}
+
 export async function getHeroes() {
   const res = await fetch(`${BASE_URL}/heroes`);
   if (!res.ok) return {};

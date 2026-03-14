@@ -1,5 +1,5 @@
 import { resolvePlayer } from "./steam_resolver.js";
-import { getRecentMatches, getHeroes } from "./opendota_api.js";
+import { getRecentMatches, getHeroes, getMatchParsed } from "./opendota_api.js";
 import { renderMatches, renderError, renderLoading } from "./match_view.js";
 
 const playerInput = document.getElementById("player-input");
@@ -31,6 +31,8 @@ fetchBtn.addEventListener("click", async () => {
     playerInfoEl.textContent = `Player: ${player.name} — SteamID32: ${player.steam_id32}`;
 
     const matches = await getRecentMatches(player.steam_id32);
+    const parsedFlags = await Promise.all(matches.map((m) => getMatchParsed(m.match_id)));
+    matches.forEach((m, i) => { m.has_parsed = parsedFlags[i]; });
     renderMatches(matches, heroMap, resultsEl);
   } catch (err) {
     renderError(err.message || "An unexpected error occurred.", resultsEl);

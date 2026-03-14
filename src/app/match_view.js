@@ -21,6 +21,7 @@ export function renderMatches(matches, heroMap, container) {
         <td>${m.deaths}</td>
         <td>${m.assists}</td>
         <td class="result">${win ? "Win" : "Loss"}</td>
+        <td>${m.has_parsed ? "Yes" : "No"}</td>
       </tr>`;
     })
     .join("");
@@ -35,6 +36,7 @@ export function renderMatches(matches, heroMap, container) {
           <th>D</th>
           <th>A</th>
           <th>Result</th>
+          <th>Parsed</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
