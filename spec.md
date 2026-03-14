@@ -1,553 +1,298 @@
 
-# Dota Chat Comic Generator — Technical Specification (MVP Phase 1)
+# Bobo Chronicles — Technical Specification
 
 ## 1. Goal
 
-Build a **static web application** that generates a comic/story based on chat logs from a player's recent Dota matches.
+Build a **static web application** that generates a narrative story based on a player's recent Dota 2 matches.
 
-The MVP will only implement:
+The app:
 
-1. Resolve a **player name / profile URL** to **SteamID32**
-2. Fetch **recent matches for that player from OpenDota**
-3. Display the matches in a simple UI
-
-No story generation yet.
+1. Resolves a **player name / profile URL** to **SteamID32**
+2. Fetches **recent matches** from OpenDota
+3. Displays matches in a table (with parsed status)
+4. Lets the user select up to 5 **parsed matches**
+5. Fetches full match details and generates a **text story** — act by act, scene by scene — from teamfights, objectives, and chat logs
 
 ---
 
-# 2. Architecture
+## 2. Architecture
 
-The app is a **pure static web app**.
+Pure **static web app** — no backend server.
 
-No backend server.
-
-All API calls are done **directly from the browser**.
+All API calls are made directly from the browser.
 
 ```
 Browser
    │
-   ├── Steam Resolve API
+   ├── Steam Web API  (vanity name resolution)
    │
-   └── OpenDota API
+   └── OpenDota API   (matches, match details, heroes, player profile)
 ```
 
-Hostable on:
-
-* Vercel
-* GitHub Pages
-* Netlify
-* Cloudflare Pages
+Built with **Vite** (ES modules, no framework). Deployable to Vercel, GitHub Pages, Netlify, Cloudflare Pages.
 
 ---
 
-# 3. Key Problem: SteamID Resolution
+## 3. SteamID Resolution
 
-OpenDota requires:
+OpenDota requires **SteamID32**. Users typically provide a profile name, URL, or SteamID64.
+
+### Supported inputs
+
+| Input type | Example |
+|---|---|
+| Steam profile URL (`/id/`) | `https://steamcommunity.com/id/notail` |
+| Steam profile URL (`/profiles/`) | `https://steamcommunity.com/profiles/76561198000000000` |
+| Steam vanity name | `notail`, `miracle-` |
+| SteamID64 (17 digits) | `76561198000000000` |
+| SteamID32 (≤10 digits) | `86745912` |
+
+### Conversion
 
 ```
-SteamID32
+SteamID32 = SteamID64 − 76561197960265728
 ```
 
-Example:
-
-```
-86745912
-```
-
-But users typically know:
-
-* Steam profile name
-* Steam profile URL
-* SteamID64
-
-Therefore the app must resolve **user input → SteamID32**.
+Vanity name → SteamID64 via Steam Web API (`ISteamUser/ResolveVanityURL`). Requires a **Steam API key**, entered by the user in the UI and persisted in `localStorage`.
 
 ---
 
-# 4. Supported User Inputs
-
-The UI should accept:
-
-### 1️⃣ Steam profile URL
-
-Examples:
-
-```
-https://steamcommunity.com/id/playername
-https://steamcommunity.com/profiles/76561198000000000
-```
-
-### 2️⃣ Steam vanity name
-
-Example:
-
-```
-notail
-miracle-
-ceb
-```
-
-### 3️⃣ SteamID64
-
-Example:
-
-```
-76561198000000000
-```
-
----
-
-# 5. SteamID Conversion
-
-Steam IDs:
-
-```
-SteamID64 → SteamID32
-```
-
-Formula:
-
-```
-SteamID32 = SteamID64 - 76561197960265728
-```
-
-Example:
-
-```
-SteamID64: 76561198000000000
-SteamID32: 39734272
-```
-
----
-
-# 6. Steam Vanity Resolution
-
-To convert:
-
-```
-vanity name → SteamID64
-```
-
-Use Steam Web API:
-
-```
-ISteamUser/ResolveVanityURL
-```
-
-Endpoint:
-
-```
-https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key=STEAM_API_KEY&vanityurl=USERNAME
-```
-
-Response:
-
-```json
-{
-  "response": {
-    "steamid": "76561198000000000",
-    "success": 1
-  }
-}
-```
-
----
-
-# 7. API Dependencies
+## 4. API Dependencies
 
 ### Steam Web API
 
 Used only for vanity resolution.
 
-Requires:
-
 ```
-Steam API Key
+GET https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/
+    ?key=STEAM_API_KEY&vanityurl=USERNAME
 ```
 
-Docs:
-
-[https://developer.valvesoftware.com/wiki/Steam_Web_API](https://developer.valvesoftware.com/wiki/Steam_Web_API)
-
----
+Requires a user-supplied Steam API key.
 
 ### OpenDota API
 
-Docs:
+Base URL: `https://api.opendota.com/api`
 
-[https://docs.opendota.com/](https://docs.opendota.com/)
+| Endpoint | Used for |
+|---|---|
+| `GET /players/{id}/recentMatches` | Fetch recent match list |
+| `GET /matches/{match_id}` | Check parsed status + fetch full match details |
+| `GET /heroes` | Hero ID → name map |
+| `GET /players/{id}` | Display name (personaname) |
 
-Used endpoints:
-
-```
-GET /players/{account_id}/recentMatches
-```
-
-Example:
-
-```
-https://api.opendota.com/api/players/12345678/recentMatches
-```
+No API key required for OpenDota. Soft rate limits apply; MVP fetches at most 10 recent matches.
 
 ---
 
-# 8. Phase 1 Feature Set
+## 5. Feature Set
 
-### Feature 1 — Player Resolver
-
-Input:
+### Feature 1 — Player Resolver (`steam_resolver.js`)
 
 ```
-Player input string
+resolvePlayer(input, steamApiKey) → { steam_id32, steam_id64, name }
 ```
 
-Possible types:
+Handles all supported input types (see §3).
+
+### Feature 2 — Fetch Recent Matches (`opendota_api.js`)
 
 ```
-steam URL
-steam vanity name
-steamid64
-steamid32
+getRecentMatches(steamID32, limit = 10) → MatchSummary[]
+getMatchParsed(matchId) → boolean
+getMatchDetails(matchId) → MatchDetail
+getHeroes() → { [hero_id]: name }
+getPlayerProfile(steamId32) → string | null
 ```
 
-Output:
+### Feature 3 — Display Matches (`match_view.js`)
+
+Renders a match table:
+
+| | Match ID | Hero | K | D | A | Result | Parsed |
+|---|---|---|---|---|---|---|---|
+| ☐ | 7456123456 | Invoker | 12 | 4 | 8 | Win | Yes |
+
+- Rows coloured Win/Loss
+- Match ID links to `opendota.com/matches/{id}`
+- Checkboxes only shown for parsed matches
+- Up to **5 matches** selectable for story generation
+
+### Feature 4 — Story Generator (`comic_generator.js`)
 
 ```
-SteamID32
+generateStoryScript(matchIds, heroMap, protagonistId) → Chapter[]
 ```
+
+For each match, extracts key events in chronological order:
+
+| Event type | Source | Trigger |
+|---|---|---|
+| First blood | `match.first_blood_time` + objectives | Always |
+| Teamfight | `match.teamfights[]` | Always |
+| Objective | `match.objectives[]` | Tower kills, barracks, Roshan, Aegis, Glyph |
+| Post-fight pause | `match.pauses[]` | Pauses within 90s of a teamfight end |
+
+Each event includes nearby **chat messages** (type `"chat"`, non-numeric, within a time window).
+
+**Teamfight intensity:**
+
+| Deaths | Label |
+|---|---|
+| ≥ 5 | MASSACRE |
+| ≥ 3 | TEAMFIGHT |
+| < 3 | SKIRMISH |
+
+**Protagonist tracking:** the searched player is identified across all scenes. Their hero is highlighted, and scenes note whether they survived, died, scored first blood, or destroyed an objective.
+
+### Feature 5 — Story Renderer (`comic_view.js`)
+
+```
+renderStory(chapters, container)
+```
+
+Renders chapters as styled HTML. Each chapter shows:
+
+- Act number, Match ID (linked), duration, result, score
+- Protagonist hero + side (Radiant/Dire)
+- Ally and enemy hero lists
+- Scenes in order: first blood → teamfights/objectives/pauses
+- Chat dialogue with speaker names
 
 ---
 
-### Feature 2 — Fetch Recent Matches
+## 6. Data Model
 
-Input:
+### Player
 
-```
-SteamID32
-```
-
-API call:
-
-```
-GET /players/{id}/recentMatches
-```
-
-Limit:
-
-```
-N = configurable
-Default = 10
-```
-
-Output:
-
-List of matches.
-
----
-
-### Feature 3 — Display Matches
-
-Display simple table:
-
-```
-Match ID
-Hero
-Kills
-Deaths
-Assists
-Win/Loss
-```
-
-Example:
-
-| Match      | Hero    | K  | D | A | Result |
-| ---------- | ------- | -- | - | - | ------ |
-| 7456123456 | Invoker | 12 | 4 | 8 | Win    |
-
----
-
-# 9. Data Model
-
-## Player
-
-```
+```js
 {
   steam_id32: number,
-  steam_id64: string,
+  steam_id64: string | null,
   name: string
 }
 ```
 
----
+### MatchSummary (from OpenDota `/recentMatches`)
 
-## MatchSummary
-
-From OpenDota:
-
-```
+```js
 {
   match_id: number,
   hero_id: number,
   kills: number,
   deaths: number,
   assists: number,
-  player_slot: number,
-  radiant_win: boolean
+  player_slot: number,   // < 128 = Radiant
+  radiant_win: boolean,
+  has_parsed: boolean    // derived: added after checking /matches/{id}
 }
 ```
 
-Derived:
+### Chapter (generated)
+
+```js
+{
+  matchId: number,
+  duration: number,        // seconds
+  radiantWin: boolean,
+  radiantScore: number,
+  direScore: number,
+  radiantHeroes: string[],
+  direHeroes: string[],
+  protagonistHero: string | null,
+  protagonistName: string | null,
+  protagonistIsRadiant: boolean | null,
+  scenes: Scene[]
+}
+```
+
+### Scene types
+
+- `first_blood` — `{ time, killerName, isProtagonistKill, chat }`
+- `teamfight` — `{ time, intensity, deaths, duration, radiantParticipants, direParticipants, protagonistParticipated, protagonistDied, chat }`
+- `objective` — `{ time, label, desc, icon, heroName, isProtagonistObj, chat }`
+- `pause` — `{ time, chat }`
+
+---
+
+## 7. Project Structure
 
 ```
-result = win | loss
+bobo-chronicles/
+├── index.html
+├── package.json
+├── vite.config.js (optional)
+└── src/
+    ├── app/
+    │   ├── main.js              # Entry point, event handlers
+    │   ├── steam_resolver.js    # SteamID resolution
+    │   ├── opendota_api.js      # OpenDota API calls
+    │   ├── match_view.js        # Match table renderer
+    │   ├── comic_generator.js   # Story/chapter builder
+    │   └── comic_view.js        # Story HTML renderer
+    └── styles/
+        └── styles.css
 ```
 
 ---
 
-# 10. UI Flow
-
-### Step 1 — Player Input
+## 8. UI Flow
 
 ```
-[ Enter player name or profile URL ]
-
-[ Fetch Matches ]
-```
-
----
-
-### Step 2 — Resolve Player
-
-Process:
-
-```
-input
-   ↓
-resolve SteamID64
-   ↓
-convert → SteamID32
+1. User enters Steam name / URL / ID
+2. User enters Steam API key (optional — only needed for vanity names)
+3. Click "Fetch Matches"
+   → resolvePlayer()
+   → getHeroes() + getPlayerProfile()
+   → getRecentMatches()
+   → getMatchParsed() for each match
+4. Match table renders
+5. User selects 1–5 parsed matches
+6. Click "Generate Story"
+   → getMatchDetails() for each selected match
+   → generateStoryScript()
+   → renderStory()
 ```
 
 ---
 
-### Step 3 — Fetch Matches
+## 9. Error Handling
 
-```
-GET /players/{steamid32}/recentMatches
+| Condition | Message shown |
+|---|---|
+| Vanity name, no API key | "Steam API key required…" |
+| Vanity lookup fails | `Could not resolve player "{name}".` |
+| OpenDota network/rate error | `Failed to fetch matches (HTTP {status}).` |
+| Match detail fetch fails | `Failed to fetch match {id} (HTTP {status}).` |
+| Story generation fails | `Failed to generate story: {error}` |
+
+---
+
+## 10. Security Notes
+
+The Steam API key is entered by the user and stored only in `localStorage`. It is sent directly to `api.steampowered.com` from the browser — **never proxied through a server**.
+
+For public deployments where the key should not be user-supplied, options are:
+
+1. Proxy vanity resolution through a serverless function / Cloudflare Worker
+2. Pre-resolve all players offline
+
+---
+
+## 11. Configuration
+
+```js
+RECENT_MATCH_LIMIT = 10          // opendota_api.js
+MAX_SELECTIONS = 5               // match_view.js
+POST_FIGHT_PAUSE_WINDOW = 90     // comic_generator.js (seconds after teamfight end)
 ```
 
 ---
 
-### Step 4 — Display Results
-
-Simple table.
-
----
-
-# 11. Project Structure
-
-```
-/src
-
-index.html
-
-/app
-    main.js
-    steam_resolver.js
-    opendota_api.js
-    match_view.js
-
-/styles
-    styles.css
-```
-
----
-
-# 12. Module Responsibilities
-
-## steam_resolver.js
-
-Resolves user input.
-
-Exports:
-
-```
-resolvePlayer(input) → steamID32
-```
-
-Handles:
-
-```
-profile URLs
-vanity names
-steamid64
-steamid32
-```
-
----
-
-## opendota_api.js
-
-Handles API calls.
-
-Exports:
-
-```
-getRecentMatches(steamID32, limit)
-```
-
----
-
-## match_view.js
-
-Responsible for rendering match data.
-
----
-
-# 13. Error Handling
-
-Possible errors:
-
-### Player not found
-
-```
-Steam vanity lookup failed
-```
-
-Show:
-
-```
-Could not resolve player.
-```
-
----
-
-### OpenDota API failure
-
-```
-Network failure
-Rate limit
-Invalid ID
-```
-
-Show:
-
-```
-Failed to fetch matches.
-```
-
----
-
-# 14. Rate Limiting
-
-OpenDota has soft limits.
-
-Strategy:
-
-```
-N <= 10 matches
-```
-
-Later phases will fetch:
-
-```
-GET /matches/{match_id}
-```
-
-But not in MVP.
-
----
-
-# 15. Future Phases (Not in MVP)
-
-### Phase 2
-
-Fetch match details:
-
-```
-GET /matches/{match_id}
-```
-
-Extract:
-
-```
-chat logs
-```
-
----
-
-### Phase 3
-
-Chat parser.
-
-Detect:
-
-```
-toxicity
-coordination
-tilt
-```
-
----
-
-### Phase 4
-
-Story generator.
-
-Convert chat → narrative.
-
----
-
-### Phase 5
-
-Comic renderer.
-
-Panels + speech bubbles.
-
----
-
-# 16. Non-Goals (For Now)
-
-Not implementing:
-
-* authentication
-* user accounts
-* match caching
-* large scale scraping
-* LLM integration
-
----
-
-# 17. Configuration
-
-Constants:
-
-```
-RECENT_MATCH_LIMIT = 10
-STEAM_API_KEY = env var
-```
-
----
-
-# 18. Security Note
-
-Steam API key should **not be exposed publicly**.
-
-Options:
-
-1️⃣ Proxy through serverless function
-2️⃣ Use Cloudflare Worker
-3️⃣ Pre-resolve players
-
-For MVP, a **simple serverless resolver endpoint** is recommended.
-
----
-
-# 19. Success Criteria (Phase 1)
-
-The app is successful if:
-
-1. User enters **Steam name or profile URL**
-2. App resolves **SteamID32**
-3. App fetches **recent matches**
-4. Matches render correctly
+## 12. Non-Goals
+
+- Authentication / user accounts
+- Match caching / persistence
+- LLM-generated prose (story is template-driven)
+- Comic panel image rendering (story is text/HTML)
+- Large-scale scraping
