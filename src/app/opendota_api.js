@@ -15,6 +15,12 @@ export async function getMatchParsed(matchId) {
   return data?.od_data?.has_parsed ?? false;
 }
 
+export async function getMatchDetails(matchId) {
+  const res = await fetch(`${BASE_URL}/matches/${matchId}`);
+  if (!res.ok) throw new Error(`Failed to fetch match ${matchId} (HTTP ${res.status}).`);
+  return res.json();
+}
+
 export async function getHeroes() {
   const res = await fetch(`${BASE_URL}/heroes`);
   if (!res.ok) return {};

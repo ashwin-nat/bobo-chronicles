@@ -179,3 +179,407 @@ button:disabled {
   color: #f87171;
   padding: 1rem 0;
 }
+
+/* ── Match selection controls ───────────────────────────────────────── */
+.select-cell { text-align: center; }
+
+.select-cell input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #a78bfa;
+  cursor: pointer;
+}
+
+.no-select { color: #3f3f46; }
+
+.comic-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  gap: 1rem;
+}
+
+.selection-hint {
+  font-size: 0.82rem;
+  color: #71717a;
+}
+
+#generate-comic-btn {
+  background: #b45309;
+  padding: 0.55rem 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+#generate-comic-btn:hover:not(:disabled) { background: #92400e; }
+
+/* ── Comic output wrapper ───────────────────────────────────────────── */
+#comic-output {
+  margin: 2rem auto 0;
+  max-width: 1100px;
+  padding: 0 1rem;
+}
+
+/* ── Comic title page ───────────────────────────────────────────────── */
+.comic-title-page {
+  background: #000;
+  border: 6px solid #000;
+  text-align: center;
+  padding: 3rem 1rem 2.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.comic-title-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,215,0,0.07) 1px, transparent 1px);
+  background-size: 14px 14px;
+  pointer-events: none;
+}
+
+.comic-title {
+  font-family: 'Bangers', Impact, 'Arial Narrow', sans-serif;
+  font-size: 5rem;
+  color: #FFD700;
+  text-shadow: 5px 5px 0 #000, -3px -3px 0 #7c0000;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  position: relative;
+}
+
+.comic-subtitle {
+  margin-top: 0.6rem;
+  color: #888;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-style: italic;
+  position: relative;
+}
+
+/* ── Comic book grid ─────────────────────────────────────────────────── */
+.comic-book {
+  background: #1a1a1a;
+  padding: 8px;
+  border: 6px solid #000;
+  border-top: none;
+}
+
+.comic-act {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: minmax(220px, auto);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.act-divider {
+  text-align: center;
+  background: #000;
+  color: #FFD700;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: 0.8em;
+  padding: 0.5rem;
+  margin-bottom: 8px;
+}
+
+/* ── Panel base ──────────────────────────────────────────────────────── */
+.comic-panel {
+  border: 4px solid #000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 220px;
+}
+
+/* Halftone dot overlay */
+.comic-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.18) 1px, transparent 1px);
+  background-size: 7px 7px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Panel size variants */
+.panel-full   { grid-column: 1 / -1; min-height: 280px; }
+.panel-large  { grid-column: span 2; }
+.panel-wide   { grid-column: span 3; }
+.panel-medium { grid-column: span 1; }
+
+/* ── Panel color themes ──────────────────────────────────────────────── */
+.panel-header  { background: linear-gradient(160deg, #0a1b4a 0%, #030818 100%); }
+.hdr-radiant   { background: linear-gradient(160deg, #002918 0%, #000f08 100%); }
+.hdr-dire      { background: linear-gradient(160deg, #2a0005 0%, #0f0003 100%); }
+.panel-tf-massacre { background: linear-gradient(160deg, #4a0800 0%, #1a0000 60%, #0f0005 100%); }
+.panel-tf-teamfight { background: linear-gradient(160deg, #2a0500 0%, #0f0002 100%); }
+.panel-tf-skirmish  { background: linear-gradient(160deg, #1a1400 0%, #0a0800 100%); }
+.panel-objective { background: linear-gradient(160deg, #1a0f00 0%, #080500 100%); }
+.panel-obj-roshan { background: linear-gradient(160deg, #1a0030 0%, #080015 100%); }
+.panel-firstblood { background: linear-gradient(160deg, #3a0000 0%, #0f0000 100%); }
+.panel-pause { background: linear-gradient(160deg, #001525 0%, #000810 100%); }
+
+/* ── DC-style caption boxes ──────────────────────────────────────────── */
+/* Positioned in-flow at left edge, only as wide as content */
+.caption-box {
+  background: #FFD700;
+  color: #000;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 5px 12px 5px 10px;
+  align-self: flex-start;
+  max-width: 80%;
+  line-height: 1.3;
+  border-right: 3px solid #000;
+  position: relative;
+  z-index: 5;
+}
+
+.caption-top { border-bottom: 3px solid #000; }
+.caption-bot { border-top: 3px solid #000; margin-top: auto; }
+
+/* ── Main panel content area ─────────────────────────────────────────── */
+.panel-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  position: relative;
+  z-index: 2;
+  gap: 0.5rem;
+}
+
+/* ── Action word (dominant panel text) ───────────────────────────────── */
+.action-word {
+  font-family: 'Bangers', Impact, 'Arial Narrow', sans-serif;
+  font-size: 2.8rem;
+  color: #FFD700;
+  text-shadow: 3px 3px 0 #000, -2px -2px 0 #5c0000;
+  letter-spacing: 0.08em;
+  text-align: center;
+  line-height: 1;
+}
+
+.panel-firstblood .action-word {
+  color: #ff4444;
+  text-shadow: 3px 3px 0 #000;
+}
+
+.panel-pause .action-word {
+  font-size: 1.6rem;
+  color: #8899bb;
+  text-shadow: 2px 2px 0 #000;
+}
+
+/* ── Scene icon ──────────────────────────────────────────────────────── */
+.scene-icon {
+  font-size: 3rem;
+  line-height: 1;
+  filter: drop-shadow(2px 3px 2px rgba(0,0,0,0.9));
+}
+
+/* ── Teamfight clash layout ──────────────────────────────────────────── */
+.tf-clash {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.tf-side-heroes {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: center;
+}
+
+.hero-chip {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 3px;
+  padding: 2px 7px;
+  color: #ccc;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.hero-chip.dead {
+  color: #f87171;
+  border-color: rgba(248,113,113,0.35);
+  background: rgba(127,29,29,0.25);
+  text-decoration: line-through;
+  opacity: 0.85;
+}
+
+.tf-clash-icon {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 1.6rem;
+  color: #FFD700;
+  text-shadow: 1px 1px 0 #000;
+  flex-shrink: 0;
+  padding: 0 0.2rem;
+}
+
+/* ── Objective hero credit ───────────────────────────────────────────── */
+.obj-credit {
+  font-size: 0.75rem;
+  color: #a78bfa;
+  font-style: italic;
+}
+
+/* ── Match header specifics ──────────────────────────────────────────── */
+.header-score {
+  font-family: 'Bangers', Impact, 'Arial Narrow', sans-serif;
+  font-size: 4rem;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.score-r { color: #4ade80; text-shadow: 2px 2px 0 #000; }
+.score-d { color: #f87171; text-shadow: 2px 2px 0 #000; }
+.score-sep { color: #444; font-size: 2rem; }
+
+.header-result {
+  font-family: 'Bangers', Impact, 'Arial Narrow', sans-serif;
+  font-size: 1.8rem;
+  color: #FFD700;
+  text-shadow: 2px 2px 0 #000;
+  letter-spacing: 0.12em;
+}
+
+.header-duration { color: #71717a; font-size: 0.85rem; }
+
+.header-teams {
+  display: flex;
+  gap: 2rem;
+  margin-top: 0.25rem;
+}
+
+.header-team {
+  font-size: 0.7rem;
+  line-height: 1.8;
+  text-align: center;
+}
+
+.header-team strong {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.15rem;
+}
+
+.team-r strong { color: #4ade80; }
+.team-d strong { color: #f87171; }
+.team-r { color: #86efac; }
+.team-d { color: #fca5a5; }
+
+/* ── Speech bubbles ──────────────────────────────────────────────────── */
+.panel-chat {
+  position: relative;
+  z-index: 5;
+  padding: 0.6rem 0.75rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  background: rgba(0,0,0,0.45);
+  border-top: 3px solid #000;
+}
+
+.speech-bubble {
+  position: relative;
+  background: #fff;
+  border: 3px solid #000;
+  border-radius: 18px;
+  padding: 6px 12px 6px 10px;
+  max-width: 88%;
+  align-self: flex-start;
+  margin-bottom: 10px; /* room for tail */
+}
+
+.speech-bubble:nth-child(even) {
+  align-self: flex-end;
+  border-radius: 18px 18px 0 18px;
+}
+
+/* Tail on odd bubbles (pointing down-left) */
+.speech-bubble:nth-child(odd)::before {
+  content: '';
+  position: absolute;
+  bottom: -14px;
+  left: 18px;
+  width: 0; height: 0;
+  border: 9px solid transparent;
+  border-top: 9px solid #000;
+}
+
+.speech-bubble:nth-child(odd)::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 21px;
+  width: 0; height: 0;
+  border: 7px solid transparent;
+  border-top: 7px solid #fff;
+}
+
+/* Tail on even bubbles (pointing down-right) */
+.speech-bubble:nth-child(even)::before {
+  content: '';
+  position: absolute;
+  bottom: -14px;
+  right: 18px;
+  width: 0; height: 0;
+  border: 9px solid transparent;
+  border-top: 9px solid #000;
+}
+
+.speech-bubble:nth-child(even)::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  right: 21px;
+  width: 0; height: 0;
+  border: 7px solid transparent;
+  border-top: 7px solid #fff;
+}
+
+.bubble-speaker {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #555;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.bubble-text {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.78rem;
+  color: #111;
+  line-height: 1.35;
+}
